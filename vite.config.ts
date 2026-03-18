@@ -1,4 +1,5 @@
 import vesaErrorReporter from './.vesa/vite-error-plugin.js';
+import vesaErrorReporter from './.vesa/vite-error-plugin.js';
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
@@ -13,7 +14,7 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [vesaErrorReporter(), tailwindcss(), react()].filter(Boolean),
+  plugins: [vesaErrorReporter(), vesaErrorReporter(), tailwindcss(), react()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
