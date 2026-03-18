@@ -3,22 +3,23 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Server, Zap, Copy, Check } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Globe, Server, Zap, Copy, Check, Play, ExternalLink } from 'lucide-react';
 
 const EdgeFunctionDemo = () => {
   const [response, setResponse] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('vercel');
 
   const callEdgeFunction = async () => {
     setLoading(true);
     try {
-      // 实际部署后替换为真实域名
       const res = await fetch('/api/hello');
       const data = await res.json();
       setResponse(JSON.stringify(data, null, 2));
     } catch (error) {
-      setResponse('Error: ' + (error as Error).message);
+      setResponse('Error: ' + (error as Error).message + '\n\n提示：请先部署边缘函数到生产环境');
     } finally {
       setLoading(false);
     }
@@ -30,74 +31,123 @@ const EdgeFunctionDemo = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const deployConfigs = {
+    vercel: {
+      name: 'Vercel Edge',
+      color: 'bg-black',
+      steps: [
+        '将 edge/hello.ts 移动到项目根目录 api/hello.ts',
+        '配置 vercel.json 指定 edge runtime',
+        '运行 vercel --prod 部署',
+        '在 Dashboard → Settings → Domains 添加 www.example.com'
+      ],
+      config: `{
+  "functions": {
+    "api/hello.ts": {
+      "runtime": "edge"
+    }
+  }
+}`
+    },
+    cloudflare: {
+      name: 'Cloudflare Workers',
+      color: 'bg-orange-500',
+      steps: [
+        '安装 Wrangler: npm i -g wrangler',
+        '修改导出为 Workers 格式',
+        '运行 wrangler deploy 部署',
+        '在 Dashboard → Workers → Custom Domains 绑定域名'
+      ],
+      config: `export default {
+  async fetch(request: Request) {
+    return new Response('Hello from Edge!');
+  }
+};`
+    },
+    netlify: {
+      name: 'Netlify Edge',
+      color: 'bg-teal-500',
+      steps: [
+        '创建 netlify/edge-functions/hello.ts',
+        '配置 netlify.toml 路由规则',
+        '推送到 Git 触发自动部署',
+        '在 Site settings → Domain management 添加自定义域名'
+      ],
+      config: `[[edge_functions]]
+  function = "hello"
+  path = "/api/hello"`
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-slate-100 p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
-              <Zap className="h-8 w-8 text-cyan-400" />
+            <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
+              <Zap className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-foreground">
                 Edge Function
               </h1>
-              <p className="text-slate-400 text-lg">Hello World 示例与部署指南</p>
+              <p className="text-muted-foreground">Hello World 示例与部署指南</p>
             </div>
           </div>
         </div>
 
-        {/* Deployment Info */}
+        {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+          <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-cyan-400" />
-                <CardTitle className="text-sm text-slate-300">目标域名</CardTitle>
+                <Globe className="h-4 w-4 text-primary" />
+                <CardTitle className="text-sm">目标域名</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <code className="text-cyan-400 font-mono text-sm">www.example.com</code>
-              <p className="text-xs text-slate-500 mt-2">需在部署平台控制台绑定</p>
+              <code className="text-primary font-mono text-sm">www.example.com</code>
+              <p className="text-xs text-muted-foreground mt-2">需在部署平台控制台绑定</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+          <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Server className="h-4 w-4 text-purple-400" />
-                <CardTitle className="text-sm text-slate-300">运行时</CardTitle>
+                <Server className="h-4 w-4 text-secondary-foreground" />
+                <CardTitle className="text-sm">运行时</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <Badge variant="outline" className="border-purple-500/30 text-purple-400">
-                Edge Runtime
-              </Badge>
-              <p className="text-xs text-slate-500 mt-2">V8 Isolate 环境</p>
+              <Badge variant="secondary">Edge Runtime</Badge>
+              <p className="text-xs text-muted-foreground mt-2">V8 Isolate 环境</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+          <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-amber-400" />
-                <CardTitle className="text-sm text-slate-300">延迟</CardTitle>
+                <Zap className="h-4 w-4 text-chart-4" />
+                <CardTitle className="text-sm">延迟</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <span className="text-amber-400 font-mono text-sm">&lt; 50ms</span>
-              <p className="text-xs text-slate-500 mt-2">全球边缘节点</p>
+              <span className="text-chart-4 font-mono text-sm font-bold">&lt; 50ms</span>
+              <p className="text-xs text-muted-foreground mt-2">全球边缘节点</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Test Section */}
-        <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-slate-200">函数测试</CardTitle>
-            <CardDescription className="text-slate-400">
-              点击按钮调用边缘函数（需先部署）
+            <CardTitle className="flex items-center gap-2">
+              <Play className="h-5 w-5 text-primary" />
+              函数测试
+            </CardTitle>
+            <CardDescription>
+              点击按钮调用边缘函数（需先部署到生产环境）
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -105,7 +155,6 @@ const EdgeFunctionDemo = () => {
               <Button 
                 onClick={callEdgeFunction}
                 disabled={loading}
-                className="bg-cyan-600 hover:bg-cyan-700 text-white"
               >
                 {loading ? '请求中...' : '调用 /api/hello'}
               </Button>
@@ -113,7 +162,6 @@ const EdgeFunctionDemo = () => {
                 <Button 
                   variant="outline" 
                   onClick={copyToClipboard}
-                  className="border-slate-700 text-slate-300 hover:bg-slate-800"
                 >
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
@@ -121,7 +169,7 @@ const EdgeFunctionDemo = () => {
             </div>
             
             {response && (
-              <pre className="bg-slate-950 border border-slate-800 rounded-lg p-4 overflow-auto text-sm font-mono text-green-400">
+              <pre className="bg-muted border border-border rounded-lg p-4 overflow-auto text-sm font-mono text-foreground">
                 {response}
               </pre>
             )}
@@ -129,56 +177,60 @@ const EdgeFunctionDemo = () => {
         </Card>
 
         {/* Deployment Guide */}
-        <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-slate-200">部署指南</CardTitle>
-            <CardDescription className="text-slate-400">
-              将边缘函数部署到生产环境并绑定域名
+            <CardTitle className="flex items-center gap-2">
+              <ExternalLink className="h-5 w-5 text-primary" />
+              部署指南
+            </CardTitle>
+            <CardDescription>
+              选择平台查看具体的部署步骤和域名绑定方法
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Vercel */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                <span className="w-2 h-2 bg-black rounded-full" />
-                Vercel Edge Functions
-              </h3>
-              <ol className="text-sm text-slate-400 space-y-1 list-decimal list-inside ml-4">
-                <li>将文件移动到 <code className="bg-slate-800 px-1 rounded">api/hello.ts</code>（项目根目录）</li>
-                <li>安装 Vercel CLI: <code className="bg-slate-800 px-1 rounded">npm i -g vercel</code></li>
-                <li>部署: <code className="bg-slate-800 px-1 rounded">vercel --prod</code></li>
-                <li>绑定域名: 在 Vercel Dashboard → Project Settings → Domains 添加 <code className="text-cyan-400">www.example.com</code></li>
-              </ol>
-            </div>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="vercel">Vercel</TabsTrigger>
+                <TabsTrigger value="cloudflare">Cloudflare</TabsTrigger>
+                <TabsTrigger value="netlify">Netlify</TabsTrigger>
+              </TabsList>
+              
+              {Object.entries(deployConfigs).map(([key, config]) => (
+                <TabsContent key={key} value={key} className="space-y-4 mt-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`w-3 h-3 rounded-full ${config.color}`} />
+                    <h3 className="font-semibold text-foreground">{config.name}</h3>
+                  </div>
+                  
+                  <ol className="space-y-2 list-decimal list-inside text-muted-foreground">
+                    {config.steps.map((step, idx) => (
+                      <li key={idx} className="text-sm">{step}</li>
+                    ))}
+                  </ol>
 
-            {/* Cloudflare */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                <span className="w-2 h-2 bg-orange-500 rounded-full" />
-                Cloudflare Workers
-              </h3>
-              <ol className="text-sm text-slate-400 space-y-1 list-decimal list-inside ml-4">
-                <li>安装 Wrangler: <code className="bg-slate-800 px-1 rounded">npm i -g wrangler</code></li>
-                <li>修改导出格式为 Workers 格式（见代码注释）</li>
-                <li>部署: <code className="bg-slate-800 px-1 rounded">wrangler deploy</code></li>
-                <li>绑定域名: Cloudflare Dashboard → Workers & Pages → Custom Domains</li>
-              </ol>
-            </div>
-
-            {/* Netlify */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                <span className="w-2 h-2 bg-teal-500 rounded-full" />
-                Netlify Edge Functions
-              </h3>
-              <ol className="text-sm text-slate-400 space-y-1 list-decimal list-inside ml-4">
-                <li>将文件放到 <code className="bg-slate-800 px-1 rounded">netlify/edge-functions/hello.ts</code></li>
-                <li>创建 <code className="bg-slate-800 px-1 rounded">netlify.toml</code> 配置路由</li>
-                <li>部署到 Netlify 并添加自定义域名</li>
-              </ol>
-            </div>
+                  <div className="mt-4">
+                    <p className="text-xs text-muted-foreground mb-2">配置示例：</p>
+                    <pre className="bg-muted border border-border rounded-lg p-3 overflow-auto text-xs font-mono text-foreground">
+                      {config.config}
+                    </pre>
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
           </CardContent>
         </Card>
+
+        {/* Domain Binding Note */}
+        <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-start gap-3">
+          <Globe className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <h4 className="font-medium text-foreground">关于域名绑定 www.example.com</h4>
+            <p className="text-sm text-muted-foreground mt-1">
+              域名绑定需要在各平台的控制台完成，通常需要验证 DNS 记录。部署成功后，
+              访问 <code className="bg-background px-1 rounded">https://www.example.com/api/hello</code> 即可看到边缘函数的响应。
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -7,9 +7,9 @@ import EdgeFunctionDemo from './pages/EdgeFunctionDemo';
 
 function Navigation() {
   return (
-    <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 flex items-center h-14 gap-6">
-        <span className="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        <span className="font-bold text-lg text-foreground">
           Edge Demo
         </span>
         <div className="flex gap-1">
@@ -19,8 +19,8 @@ function Navigation() {
               cn(
                 "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )
             }
           >
@@ -33,8 +33,8 @@ function Navigation() {
               cn(
                 "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )
             }
           >
@@ -50,7 +50,7 @@ function Navigation() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-slate-950">
+      <div className="min-h-screen bg-background">
         <Navigation />
         <Routes>
           <Route path="/" element={<HelloWorld />} />
