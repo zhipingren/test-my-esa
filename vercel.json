@@ -1,0 +1,11 @@
+
+{
+  "functions": {
+    "api/hello.ts": {
+      "runtime": "edge"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/hello", "destination": "/api/hello.ts" }
+  ]
+}

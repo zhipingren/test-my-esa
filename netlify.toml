@@ -1,0 +1,9 @@
+
+# Netlify Edge Functions 配置示例
+[[edge_functions]]
+  function = "hello"
+  path = "/api/hello"
+
+[build]
+  command = "npm run build"
+  publish = "dist"
